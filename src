@@ -1,0 +1,56 @@
+--CÓMO ENCONTRAR REGISTROS DUPLICADOS EN SQL
+--DISTINCT → Para encontrar valores únicos en una sola columna, DISTINCT siempre es más conveniente.
+
+--UNION → Es un operador que se usa para combinar los resultados de dos declaraciones SELECT. 
+--Además, elimina las filas duplicadas y mantiene solo los registros únicos.
+
+SELECT
+employee_id,
+employee_name,
+department
+FROM Dummy_employees
+UNION
+SELECT
+employee_id,
+employee_name,
+department
+FROM Dummy_employees
+Esto muestra el mismo resultado que DISTINCT, solo que el orden de los registros es diferente.
+
+--ROW_NUMBER → Es una función de ventana para asignar un número entero secuencial a cada fila dentro de la partición de un conjunto de resultados.
+--Por lo tanto, en cada fila de partición se asigna el número 1 a la primera fila.
+
+SELECT
+employee_id,
+employee_name,
+department,
+ROW_NUMBER() OVER(PARTITION BY employee_name,department, employee_id) as row_count
+FROM Dummy_employees
+
+--En este resultado hay dos filas en cada partición cuando employee_name está duplicado. Y por lo tanto, el número de fila 2 se asigna a cada una de estas filas duplicadas.
+--Ahora, cuidado❗
+--No podés usar la función de ventana con la cláusula WHERE, porque en la ejecución de consultas SQL, la cláusula WHERE se procesa antes de calcular las funciones de ventana.
+--Debes crear una tabla temporal que almacenará el resultado de la consulta mencionada anteriormente y necesitarás otra declaración SELECT para obtener registros distintos.
+
+--GROUP BY
+--La cláusula GROUP BY se usa para agrupar filas por una o más columnas.A menudo se usa con funciones agregadas como COUNT(), MAX(), MIN(), SUM(), AVG() para obtener cálculos agregados para filas agrupadas.
+
+--Sin embargo, se puede usar sin ninguna función agregada para obtener registros distintos o únicos, como se muestra a continuación.
+
+SELECT
+employee_id,
+employee_name,
+department
+FROM Dummy_employees
+GROUP BY
+employee_id,
+employee_name,
+department
+
+--Simplemente, debe mencionar todos los nombres de columna en la cláusula GROUP BY para obtener registros únicos.
+
+--Otra forma:
+select key, count(*) 
+from table 
+group by 1 
+having count(*)>1
